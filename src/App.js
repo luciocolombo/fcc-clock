@@ -1,106 +1,74 @@
 import React, { useState } from "react";
 
 function App() {
-   const [breakLength, setBreakLength] = useState(5);
-   const [sessionLength, setSessionLength] = useState(25);
-   const [clock, setClock] = useState(25 * 60 * 1000); //time type
-   const [timeInterval, setTimeInterval] = useState(0);
+   const [breakLength, setBreakLength] = useState(5 * 60);
+   const [sessionLength, setSessionLength] = useState(25 * 60);
+   const [clock, setClock] = useState(25 * 60);
 
-   const handleReset = () => {
-      setClock(25 * 60 * 1000);
-      clearInterval(timeInterval);
-      setTimeInterval(0);
-      setBreakLength(5);
-      setSessionLength(25);
-   };
+   const handleStartStop = () => {};
 
-   const handleStartStop = () => {
-      if (timeInterval === 0) {
-         setTimeInterval(setInterval(() => setClock(updateClock), 1000));
-         return;
+   const handleIncrement = (type) => {
+      const checkVal = (prev) => {
+         if (prev + 60 <= 60 * 60) return prev + 60;
+         return 60 * 60;
+      };
+      if (type === "break") {
+         setBreakLength(checkVal);
       } else {
-         clearInterval(timeInterval);
-         setTimeInterval(0);
+         setSessionLength(checkVal);
+         setClock(checkVal);
       }
    };
 
-   const updateClock = (prev) => {
-      if (prev > 0) {
-         return prev - 1000;
-      } else {
-         clearInterval(timeInterval);
-         setTimeInterval(0);
+   const handleDecrement = (type) => {
+      const checkVal = (prev) => {
+         if (prev - 60 > 0) return prev - 60;
          return 0;
+      };
+      if (type === "break") {
+         setBreakLength(checkVal);
+      } else {
+         setSessionLength(checkVal);
       }
    };
 
-   /*  const toSecs = (timestamp) => {
-     return (timestamp / 100) % 60;
-    };
-    
-    const toMins = (timestamp) => {
-      return Math.floor(timestamp / 1000 / 60);
-    }; */
+   const handleReset = () => {};
 
-   const formatClock = () => {
-      /*   const secs = (clock / 100) % 60;
-      const mins = Math.floor(clock / 1000 / 60);
-      return `${(mins, " : ", secs)}`; */
-      return clock / 1000;
+   const formatToMin = (timeInSecs) => {
+      return timeInSecs / 60;
    };
 
-   const handleBreakDecrement = () => {
-      setBreakLength((prev) => {
-         if (prev - 1 > 0) return prev - 1;
-         return 1;
-      });
+   const formatToClock = (timeInSecs) => {
+      const mins = Math.floor(timeInSecs / 60);
+      const secs = timeInSecs % 60;
+      return `${mins} : ${secs > 10 ? secs : "0" + secs}`;
    };
-
-   const handleBreakIncrement = () => {
-      setBreakLength((prev) => prev + 1);
-   };
-   const handleSessionDecrement = () => {
-      setSessionLength((prev) => {
-         if (prev > 0) return prev - 1;
-         return 0;
-      });
-      setClock(() => sessionLength * 1000);
-   };
-
-   const handleSessionIncrement = () => {
-      setSessionLength((prev) => {
-         if (prev + 1 <= 60) return prev + 1;
-         return 60;
-      });
-      setClock(() => sessionLength * 1000);
-   };
-
    return (
       <div className="App container text-center border bg-light">
          <div className="d-flex justify-content-center mb-3">
             <div>
                <div id="break-label"> Break length </div>
-               <h3 id="break-length">{breakLength}</h3>
-               <button id="break-decrement" onClick={handleBreakDecrement}>
+               <h3 id="break-length">{formatToMin(breakLength)}</h3>
+               <button id="break-decrement" onClick={() => handleDecrement("break")}>
                   Break -
                </button>
-               <button id="break-increment" onClick={handleBreakIncrement}>
+               <button id="break-increment" onClick={() => handleIncrement("break")}>
                   Break +
                </button>
             </div>
             <div>
                <div id="session-label"> Session length</div>
-               <h3 id="session-length">{sessionLength} </h3>
-               <button id="session-decrement" onClick={handleSessionDecrement}>
+               <h3 id="session-length">{formatToMin(sessionLength)} </h3>
+               <button id="session-decrement" onClick={() => handleDecrement("session")}>
                   Session -
                </button>
-               <button id="session-increment" onClick={handleSessionIncrement}>
+               <button id="session-increment" onClick={() => handleIncrement("session")}>
                   Session +
                </button>
             </div>
          </div>
          <h3 id="timer-label"> Session</h3>
-         <p id="time-left">{formatClock(clock)} </p>
+         <p id="time-left">{formatToClock(clock)} </p>
          <button id="start_stop" onClick={handleStartStop}>
             Start
          </button>
