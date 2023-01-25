@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 function App() {
-   const [breakLength, setBreakLength] = useState(2 * 60);
-   const [sessionLength, setSessionLength] = useState(1 * 60);
-   const [clock, setClock] = useState(1 * 60);
+   const [breakLength, setBreakLength] = useState(5 * 60);
+   const [sessionLength, setSessionLength] = useState(25 * 60);
+   const [clock, setClock] = useState(25 * 60);
    const [running, setRunning] = useState(false);
-   const [isBreak, setBreakState] = useState(false);
+   const [isNextBreak, setIsNextBreakState] = useState(true);
 
    useEffect(() => {
       if (clock < 0) {
          clearInterval(localStorage.getItem("interval-id"));
-         if (isBreak) {
-            setClock(sessionLength);
-         } else {
+         if (isNextBreak) {
             setClock(breakLength);
+         } else {
+            setClock(sessionLength);
          }
-         setBreakState((prev) => !prev);
+         setIsNextBreakState((prev) => !prev);
          const interval = setInterval(tick, 1000);
          localStorage.setItem("interval-id", interval);
       }
@@ -34,7 +34,7 @@ function App() {
 
    const tick = () => {
       console.log("TICK");
-      setClock((prev) => prev - 60);
+      setClock((prev) => prev - 1);
    };
 
    const handleIncrement = (type) => {
@@ -56,7 +56,7 @@ function App() {
       if (running) return;
       const checkVal = (prev) => {
          if (prev - 60 > 0) return prev - 60;
-         return 0;
+         return 60;
       };
       if (type === "break") {
          setBreakLength(checkVal);
@@ -68,9 +68,11 @@ function App() {
 
    const handleReset = () => {
       setRunning(false);
+      setIsNextBreakState(true);
       setBreakLength(5 * 60);
       setSessionLength(25 * 60);
       setClock(25 * 60);
+      clearInterval(localStorage.getItem("interval-id"));
       localStorage.clear();
    };
 
@@ -81,7 +83,7 @@ function App() {
    const formatToClock = (timeInSecs) => {
       const mins = Math.floor(timeInSecs / 60);
       const secs = timeInSecs % 60;
-      return `${mins} : ${secs >= 10 ? secs : "0" + secs}`;
+      return `${mins >= 10 ? mins : "0" + mins}:${secs >= 10 ? secs : "0" + secs}`;
    };
    return (
       <div className="App container text-center border bg-light">
@@ -107,7 +109,7 @@ function App() {
                </button>
             </div>
          </div>
-         <h3 id="timer-label"> Session</h3>
+         <h3 id="timer-label">{isNextBreak ? "Session" : "Break"}</h3>
          <p id="time-left">{formatToClock(clock)} </p>
          <button id="start_stop" onClick={handleStartStop}>
             Start/Stop
