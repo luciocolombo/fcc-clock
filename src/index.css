@@ -2,5 +2,9 @@ body{
   background-color: cadetblue;
 }
 .App{
-  margin-top: 20%;
+  margin-top: 15%;
+}
+
+.container{
+  border: 8px solid black;
 }

@@ -6,10 +6,11 @@ function App() {
    const [clock, setClock] = useState(25 * 60);
    const [running, setRunning] = useState(false);
    const [isNextBreak, setIsNextBreakState] = useState(true);
-
+   const audioBeep = useRef();
    useEffect(() => {
       if (clock < 0) {
          clearInterval(localStorage.getItem("interval-id"));
+         audioBeep.current.play();
          if (isNextBreak) {
             setClock(breakLength);
          } else {
@@ -73,6 +74,8 @@ function App() {
       setSessionLength(25 * 60);
       setClock(25 * 60);
       clearInterval(localStorage.getItem("interval-id"));
+      audioBeep.current.pause();
+      audioBeep.current.currentTime = 0;
       localStorage.clear();
    };
 
@@ -86,22 +89,22 @@ function App() {
       return `${mins >= 10 ? mins : "0" + mins}:${secs >= 10 ? secs : "0" + secs}`;
    };
    return (
-      <div className="App container text-center border bg-light">
+      <div className="App container text-center  bg-light w-50 p-5">
          <div className="d-flex justify-content-center mb-3">
-            <div>
+            <div className="border mx-3 p-3">
                <div id="break-label"> Break length </div>
                <h3 id="break-length">{formatToMin(breakLength)}</h3>
-               <button id="break-decrement" onClick={() => handleDecrement("break")}>
+               <button className="m-1" id="break-decrement" onClick={() => handleDecrement("break")}>
                   Break -
                </button>
                <button id="break-increment" onClick={() => handleIncrement("break")}>
                   Break +
                </button>
             </div>
-            <div>
+            <div className="border mx-3 p-3">
                <div id="session-label"> Session length</div>
                <h3 id="session-length">{formatToMin(sessionLength)} </h3>
-               <button id="session-decrement" onClick={() => handleDecrement("session")}>
+               <button className="m-1" id="session-decrement" onClick={() => handleDecrement("session")}>
                   Session -
                </button>
                <button id="session-increment" onClick={() => handleIncrement("session")}>
@@ -111,12 +114,16 @@ function App() {
          </div>
          <h3 id="timer-label">{isNextBreak ? "Session" : "Break"}</h3>
          <p id="time-left">{formatToClock(clock)} </p>
-         <button id="start_stop" onClick={handleStartStop}>
+         <button className="m-1" id="start_stop" onClick={handleStartStop}>
             Start/Stop
          </button>
          <button id="reset" onClick={handleReset}>
             reset
          </button>
+         <audio ref={audioBeep} id="beep">
+            <source src="https://assets.mixkit.co/sfx/preview/mixkit-dog-barking-twice-1.mp3" type="audio/mp3" />
+            Your browser does not support the audio tag.
+         </audio>
       </div>
    );
 }
