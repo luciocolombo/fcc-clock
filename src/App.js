@@ -1,30 +1,48 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 function App() {
-   const [breakLength, setBreakLength] = useState(5 * 60);
-   const [sessionLength, setSessionLength] = useState(25 * 60);
-   const [clock, setClock] = useState(25 * 60);
+   const [breakLength, setBreakLength] = useState(2 * 60);
+   const [sessionLength, setSessionLength] = useState(1 * 60);
+   const [clock, setClock] = useState(1 * 60);
    const [running, setRunning] = useState(false);
+   const [isBreak, setBreakState] = useState(false);
+
+   useEffect(() => {
+      if (clock < 0) {
+         clearInterval(localStorage.getItem("interval-id"));
+         if (isBreak) {
+            setClock(sessionLength);
+         } else {
+            setClock(breakLength);
+         }
+         setBreakState((prev) => !prev);
+         const interval = setInterval(tick, 1000);
+         localStorage.setItem("interval-id", interval);
+      }
+   }, [clock]);
 
    const handleStartStop = () => {
-      if (!running) {
-         localStorage.setItem("interval-id", setInterval(updateClock, 1000));
-         setRunning(true);
-      } else {
+      if (running) {
          clearInterval(localStorage.getItem("interval-id"));
-         setRunning(false);
+         localStorage.clear();
+      } else {
+         const interval = setInterval(tick, 1000);
+         localStorage.setItem("interval-id", interval);
       }
+      setRunning((prev) => !prev);
    };
 
-   const updateClock = () => {
-      setClock((prev) => prev - 1);
+   const tick = () => {
+      console.log("TICK");
+      setClock((prev) => prev - 60);
    };
 
    const handleIncrement = (type) => {
+      const minute = 60;
       if (running) return;
       const checkVal = (prev) => {
-         if (prev + 60 <= 60 * 60) return prev + 60;
-         return 60 * 60;
+         if (prev + minute <= minute * 60) return prev + minute;
+         return minute * 60;
       };
       if (type === "break") {
          setBreakLength(checkVal);
@@ -44,6 +62,7 @@ function App() {
          setBreakLength(checkVal);
       } else {
          setSessionLength(checkVal);
+         setClock(checkVal);
       }
    };
 
@@ -52,7 +71,7 @@ function App() {
       setBreakLength(5 * 60);
       setSessionLength(25 * 60);
       setClock(25 * 60);
-      clearInterval(localStorage.getItem("interval-id"));
+      localStorage.clear();
    };
 
    const formatToMin = (timeInSecs) => {
@@ -91,7 +110,7 @@ function App() {
          <h3 id="timer-label"> Session</h3>
          <p id="time-left">{formatToClock(clock)} </p>
          <button id="start_stop" onClick={handleStartStop}>
-            Start
+            Start/Stop
          </button>
          <button id="reset" onClick={handleReset}>
             reset
